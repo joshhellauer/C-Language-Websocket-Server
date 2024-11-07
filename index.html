@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Chat</title>
+    <style>
+      .alternate {
+          background-color: #f0f0f0; /* Light gray */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Chat Server</h1>
+    <ul id="dynamic-list"></ul>
+    <label for="username">Appearing as: <input type="text" id="username"></label>
+    <label for="message"><textarea name="message" id="message" style="display: block;"></textarea></label>
+    <button onclick="sendMsg()">Click me</button>
+    <script type="text/javascript">
+      window.onload = function() {
+        // replace localhost with your desired
+        const socket = new WebSocket("ws://192.168.1.196:8080");
+
+        socket.onopen = function (event) {
+          console.log("WebSocket is open now.");
+        };
+
+        socket.onmessage = function (event) {
+          addItem(event.data);
+        };
+
+        socket.onclose = function (event) {
+          console.log("WebSocket is closed now.");
+        };
+
+        socket.onerror = function (error) {
+          console.error("WebSocket error observed:", error);
+
+          if (error.message && error.message.includes("could not establish connection")) {
+            console.log("Reconnecting to WebSocket...");
+            setTimeout(connectWebSocket, 2000); // Retry after 2 seconds
+          }
+        };
+
+        function sendMsg() {
+          const messageElement = document.getElementById('message');
+          const usernameElement = document.getElementById('username');
+          const message = messageElement.value;
+          const username = usernameElement.value;
+
+          if (message === '') {
+            return;
+          }
+          if (username === '') {
+            alert('Enter a username');
+            return;
+          }
+
+          // We'll just add this to our list
+          addItem(`${username}: ${message}`);
+          messageElement.value = '';
+
+          // Send the message through the WebSocket
+          socket.send(`${username}: ${message}`);
+        }
+
+        function addItem(text) {
+          const list = document.getElementById('dynamic-list');
+          const li = document.createElement('li');
+          li.textContent = text;
+
+          if (list.children.length % 2 === 0) {
+            li.className = 'alternate';
+          }
+
+          list.appendChild(li);
+        }
+
+        // Expose sendMsg to global scope to allow button to access it
+        window.sendMsg = sendMsg;
+      };
+    </script>
+  </body>
+</html>
