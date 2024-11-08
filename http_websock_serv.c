@@ -32,7 +32,7 @@ int main(void) {
     int listenfd, connfd, rv, yes = 1;
     struct addrinfo hints, *res, *p;
 
-    char myip[INET_ADDRSTRLEN]; // connect using IPv4 address
+    char myip[INET_ADDRSTRLEN]; // bind to an IPv4 address
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
